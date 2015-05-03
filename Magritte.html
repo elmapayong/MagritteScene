@@ -8,18 +8,21 @@
 	</head>
 	<body>
 		<script src="js/Three.js"></script><script src="js/Stats.js"></script>
+		<script src="js/three.min.js"></script>
 		<script src="js/Detector.js"></script>
 		<script src="js/OrbitControls.js"></script>
 		<script src="js/THREEx.KeyboardState.js"></script>
 		<script src="js/THREEx.FullScreen.js"></script>
 		<script src="js/THREEx.WindowResize.js"></script>
+		<script src="js/OBJLoader.js"></script>
+
 
 		<div id="ThreeJS" style="z-index: 1; position: absolute; left:0px; top:0px"></div>
 		<script>
 			var container, scene, camera, renderer, controls, stats;
 			var keyboard = new THREEx.KeyboardState();
 			var clock = new THREE.Clock();
-			var invisiCube;
+			var invisiCube, cubeCamera, sphere1, sphere2, sphere3;
 
 			init();
 			animate();
@@ -33,17 +36,16 @@
 				var ASPECT = SCREEN_WIDTH/SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 				camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 				scene.add(camera);
-				camera.position.set(0, 100, 2400);
+				camera.position.set(0, 200, 2000);
 
 				var invisiCubeGeometry = new THREE.CubeGeometry(1,1,1,1,1,1);
 				var invisiCubeMaterials = new THREE.MeshBasicMaterial({color: 0xff3333});
-				//var invisiCubeMaterials = new THREE.Material();
-				//invisiCubeMaterials.opacity(0.5);
 				invisiCube = new THREE.Mesh(invisiCubeGeometry, invisiCubeMaterials);
-				invisiCube.position.set(0, 50, 2000);
+				invisiCube.position.set(0, 150, 2000);
 				scene.add(invisiCube);
 
 				camera.lookAt(scene.position);
+
 
 				//RENDERER
 				if(Detector.webgl)
@@ -54,70 +56,53 @@
 				container = document.getElementById('ThreeJS');
 				container.appendChild(renderer.domElement);
 
+
 				//EVENTS
 				THREEx.WindowResize(renderer,camera);	//auto resize
 				THREEx.FullScreen.bindKey({charCode : 'm'.charCodeAt(0)});
 
-				//MOUSE CONTROLS - left:rotate, mid:zoom, right:pan
-				//controls = new THREE.OrbitControls(camera, renderer.domElement);
 
 				//LIGHT
-				var light = new THREE.PointLight(0xffffff);
-				light.position.set(0, 250, 0);
-				scene.add(light);
+				// var light = new THREE.PointLight(0xffffff);
+				// light.position.set(0, 250, 0);
+				//scene.add(light);
 				var ambientLight = new THREE.AmbientLight(0x111111);
 				scene.add(ambientLight);
 
+
+				// // spotlight #1 -- yellow, dark shadow
+				// var spotlight = new THREE.SpotLight(0xffff00);
+				// spotlight.position.set(0,1000,-30);
+				// spotlight.shadowCameraVisible = true;
+				// spotlight.shadowDarkness = 0.95;
+				// spotlight.intensity = 2;
+				// // must enable shadow casting ability for the light
+				// spotlight.castShadow = true;
+				// scene.add(spotlight);
+
+
+				// // create "light-ball" meshes
+				// var sphereGeometry = new THREE.SphereGeometry( 10, 16, 8 );
+				// var darkMaterial = new THREE.MeshBasicMaterial( { color: 0x000000 } );
+					
+				// var wireframeMaterial = new THREE.MeshBasicMaterial( 
+				// 	{ color: 0xffff00, wireframe: true, transparent: true } ); 
+				// var shape = THREE.SceneUtils.createMultiMaterialObject( 
+				// 	sphereGeometry, [ darkMaterial, wireframeMaterial ] );
+				// shape.position = spotlight.position;
+				// scene.add( shape );
+
+
 				//SKYBOX
-				var skyTexture = new THREE.ImageUtils.loadTexture('images/sky_hd.jpg');
-				skyTexture.wrapS = skyTexture.wrapT = THREE.RepeatWrapping;
-				skyTexture.repeat.set(10, 10);
-				var skyMaterial = new THREE.MeshBasicMaterial({map: skyTexture, side: THREE.BackSide});
-
-				// var skyMaterial = new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture('images/blue_sky.jpg'), side: THREE.BackSide});
-
-				//var skyGeometry = new THREE.CubeGeometry(5000, 5000, 5000);
+				var skyMaterial = new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture('images/beautiful_sky-dsc01468-dws.jpg'), side: THREE.BackSide});
 				var skyGeometry = new THREE.SphereGeometry(5000, 100, 100);
 				var sky = new THREE.Mesh(skyGeometry, skyMaterial);
+				//sky.position.set(0, 2400, 0);
+				sky.rotation.y = Math.PI - Math.PI/3;
 				scene.add(sky);
 
-				//OBJECTS
-				//sphere mesh:
-				//(radius ,width segments, height segments)
-				var sphereGeometry = new THREE.SphereGeometry(50, 32, 16);
-				var sphereMaterial = new THREE.MeshLambertMaterial({color: 0x8888ff});
-				var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-				sphere.position.set(100, 50, -50);
-				scene.add(sphere);
 
-				//cube mesh:
-				//array of materials, one for each side
-				//x+, x-, y+, y-, z+, z-
-				var cubeMaterialArray = [];
-				cubeMaterialArray.push(new THREE.MeshLambertMaterial({color: 0xff3333}));
-				cubeMaterialArray.push(new THREE.MeshLambertMaterial({color: 0xff8800}));
-				cubeMaterialArray.push(new THREE.MeshLambertMaterial({color: 0xffff33}));
-				cubeMaterialArray.push(new THREE.MeshLambertMaterial({color: 0x33ff33}));
-				cubeMaterialArray.push(new THREE.MeshLambertMaterial({color: 0x3333ff}));
-				cubeMaterialArray.push(new THREE.MeshLambertMaterial({color: 0x8833ff}));
-				// cubeMaterialArray.push(new THREE.MeshBasicMaterial({color: 0xff3333}));
-				// cubeMaterialArray.push(new THREE.MeshBasicMaterial({color: 0xff8800}));
-				// cubeMaterialArray.push(new THREE.MeshBasicMaterial({color: 0xffff33}));
-				// cubeMaterialArray.push(new THREE.MeshBasicMaterial({color: 0x33ff33}));
-				// cubeMaterialArray.push(new THREE.MeshBasicMaterial({color: 0x3333ff}));
-				// cubeMaterialArray.push(new THREE.MeshBasicMaterial({color: 0x8833ff}));
-				var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
-				//(width, height, depth, segmentsW, segmentsH, segementsD)
-				var cubeGeometry = new THREE.CubeGeometry(100, 100, 100, 1, 1, 1);
-				var cube = new THREE.Mesh(cubeGeometry, cubeMaterials);
-				cube.position.set(-100, 50, -50);
-				scene.add(cube);
-
-				//coordinate axis to help orient user
-				var axes = new THREE.AxisHelper(100);//(length in pixels in each direction)
-				scene.add(axes);
-
-				//ground plane:
+				//GROUND PLANE
 				var floorTexture = new THREE.ImageUtils.loadTexture('images/grass.jpg');
 				floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
 				floorTexture.repeat.set(100, 100);
@@ -127,18 +112,178 @@
 				var floor = new THREE.Mesh(floorGeometry, floorMaterial);
 				floor.position.y = -0.5;
 				floor.rotation.x = Math.PI/2;
+				//floor.receiveShadow = true;
 				scene.add(floor);
 
-				//SKY
-				var skyBoxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
-				//render faces from inside the cube instead of outside
-				var skyBoxMaterial = new THREE.MeshBasicMaterial({color: 0x9999ff, side: THREE.BackSide});
-				var skyBox = new THREE.Mesh(skyBoxGeometry, skyBoxMaterial);
-				//scene.add(skyBox)
 
-				//OR FOG - must be added to scene before first render
-				scene.fog = new THREE.FogExp2(0x9999ff, 0.00025);
+				//OBJECTS
 
+				//MOON
+				var moonTexture = THREE.ImageUtils.loadTexture('images/moon.jpg');
+				var moonMaterial = new THREE.MeshBasicMaterial({map:moonTexture, color: 0xffffcc, ambient: 0x0000ff});
+				var moonGeometry = new THREE.SphereGeometry(90, 32, 16);
+				var moon = new THREE.Mesh(moonGeometry, moonMaterial);
+				moon.position.set(500, 500, 800);
+				scene.add(moon);
+
+				//MUSICAL SPHERES
+				cubeCamera = new THREE.CubeCamera(NEAR, FAR, 256);
+				scene.add(cubeCamera);
+
+				var oLoader = new THREE.OBJLoader();
+				oLoader.load('obj/sphere.obj', function(object, materials){
+				sphere1 = new THREE.MeshBasicMaterial({envMap: cubeCamera.renderTarget});
+				object.traverse(function(child){
+					if(child instanceof THREE.Mesh){
+						child.material = sphere1;
+						}
+					});
+
+					object.position.x = -500;
+					object.position.y = 500;
+					object.position.z = 0;
+					object.scale.set(60, 60, 60);
+					// object.metal = true;
+					// object.shininess = 80;
+					scene.add(object);
+				});
+
+				oLoader.load('obj/sphere.obj', function(object, materials){
+				sphere2 = new THREE.MeshBasicMaterial({envMap: cubeCamera.renderTarget});
+				object.traverse(function(child){
+					if(child instanceof THREE.Mesh){
+						child.material = sphere2;
+						}
+					});
+
+					object.position.x = -580;
+					object.position.y = 450;
+					object.position.z = 0;
+					object.scale.set(60, 60, 60);
+					// object.metal = true;
+					// object.shininess = 80;
+					scene.add(object);
+				});
+
+
+				//mountain
+				oLoader.load('obj/mountain2.obj', function(object, materials){
+				mountain = new THREE.MeshBasicMaterial({color: 0x000000});
+				object.traverse(function(child){
+					if(child instanceof THREE.Mesh){
+						child.material = mountain;
+						}
+					});
+
+					object.position.x = 0;
+					object.position.y = 0;
+					object.position.z = -500;
+					object.rotation.y = Math.PI/2;
+					object.scale.set(500, 500,500);
+					// object.metal = true;
+					// object.shininess = 80;
+					scene.add(object);
+				});
+
+
+				//CUBES
+				var cubeMaterialArray = [];
+				cubeMaterialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/sky1.jpg' ), side: THREE.FrontSide }));
+				cubeMaterialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/sky2.jpg' ), side: THREE.FrontSide }));
+				cubeMaterialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/sky3.jpg' ), side: THREE.FrontSide }));
+				cubeMaterialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/sky4.jpg' ), side: THREE.FrontSide }));
+				cubeMaterialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/sky5.jpg' ), side: THREE.FrontSide }));
+				cubeMaterialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/sky6.jpg' ), side: THREE.FrontSide }));
+				var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
+				//(width, height, depth, segmentsW, segmentsH, segementsD)
+				var cubeGeometry = new THREE.CubeGeometry(100, 100, 100, 1, 1, 1);
+				var cube = new THREE.Mesh(cubeGeometry, cubeMaterials);
+
+				//make random cloud cubes FRONT
+				for(var i = 0; i < 25; i++){
+					var object = new THREE.Mesh(cubeGeometry.clone(), cubeMaterials);
+
+					object.position.x = Math.random()*1600-800;
+					object.position.y = 20;
+					object.position.z = Math.random()*2000-800;
+
+					//object.rotation.x = Math.random() * 2 * Math.PI;
+					object.rotation.y = Math.random() * 2 * Math.PI;
+					object.rotation.z = Math.random() * 2 * Math.PI;
+
+					var makeOneOnTop = Math.floor(Math.random()*10);
+					if(makeOneOnTop < 2){
+						var object2 = new THREE.Mesh(cubeGeometry.clone(), cubeMaterials);
+						object2.position.x = object.position.x;
+						object2.position.y = 100;
+						object2.position.z = object.position.z;
+						object2.rotation.y = Math.random() * 2 * Math.PI;
+						object2.rotation.z = Math.random() * 2 * Math.PI;
+						scene.add(object2);
+					}
+
+					//object.castShadow = true;
+
+					scene.add(object);
+				}
+
+
+				//make random cloud cubes RIGHT
+				for(var i = 0; i < 25; i++){
+					var object = new THREE.Mesh(cubeGeometry.clone(), cubeMaterials);
+
+					object.position.x = Math.random()*1600+1000;
+					object.position.y = 20;
+					object.position.z = Math.random()*3000;
+
+					//object.rotation.x = Math.random() * 2 * Math.PI;
+					object.rotation.y = Math.random() * 2 * Math.PI;
+					object.rotation.z = Math.random() * 2 * Math.PI;
+
+					var makeOneOnTop = Math.floor(Math.random()*10);
+					if(makeOneOnTop < 2){
+						var object2 = new THREE.Mesh(cubeGeometry.clone(), cubeMaterials);
+						object2.position.x = object.position.x;
+						object2.position.y = 100;
+						object2.position.z = object.position.z;
+						object2.rotation.y = Math.random() * 2 * Math.PI;
+						object2.rotation.z = Math.random() * 2 * Math.PI;
+						scene.add(object2);
+					}
+
+					//object.castShadow = true;
+
+					scene.add(object);
+				}
+
+
+				//make random cloud cubes LEFT
+				for(var i = 0; i < 25; i++){
+					var object = new THREE.Mesh(cubeGeometry.clone(), cubeMaterials);
+
+					object.position.x = Math.random()*2000-2000;
+					object.position.y = 20;
+					object.position.z = Math.random()*1500;
+
+					//object.rotation.x = Math.random() * 2 * Math.PI;
+					object.rotation.y = Math.random() * 2 * Math.PI;
+					object.rotation.z = Math.random() * 2 * Math.PI;
+
+					var makeOneOnTop = Math.floor(Math.random()*10);
+					if(makeOneOnTop < 2){
+						var object2 = new THREE.Mesh(cubeGeometry.clone(), cubeMaterials);
+						object2.position.x = object.position.x;
+						object2.position.y = 100;
+						object2.position.z = object.position.z;
+						object2.rotation.y = Math.random() * 2 * Math.PI;
+						object2.rotation.z = Math.random() * 2 * Math.PI;
+						scene.add(object2);
+					}
+
+					//object.castShadow = true;
+
+					scene.add(object);
+				}
 			}
 
 			function animate(){
@@ -194,6 +339,13 @@
 			}
 
 			function render(){
+				sphere1.visible = false;
+				sphere2.visible = false;
+				//sphere3.visible = false;
+				cubeCamera.updateCubeMap(renderer, scene);
+				sphere1.visible = true;
+				sphere2.visible = true;
+				//sphere3.visible = true;
 				renderer.render(scene, camera);
 			}
 
